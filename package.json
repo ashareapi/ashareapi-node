@@ -1,0 +1,61 @@
+{
+  "name": "ashareapi",
+  "version": "0.1.9",
+  "description": "A股数据 API 官方 Node.js / TypeScript SDK —— 行情 / K线 / 财务 / 资金 / 龙虎榜 / 板块 / 因子选股（32 端点，免费端点无需 Key）",
+  "license": "MIT",
+  "type": "module",
+  "engines": {
+    "node": ">=18"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "README.en.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "a-share",
+    "ashare",
+    "stock",
+    "quant",
+    "finance",
+    "mcp",
+    "stock-data-api",
+    "financial-data-api",
+    "typescript",
+    "nodejs"
+  ],
+  "homepage": "https://ashareapi.com",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ashareapi/ashareapi-node.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ashareapi/ashareapi-node/issues"
+  },
+  "scripts": {
+    "build": "tsup",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run --exclude tests/live.test.ts",
+    "test:live": "vitest run tests/live.test.ts",
+    "prepublishOnly": "npm run build && npm run test"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "tsup": "^8.3.5",
+    "typescript": "^5.9.0",
+    "vitest": "^3.0.5"
+  }
+}
