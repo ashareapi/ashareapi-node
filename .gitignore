@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+*.log
+*.tgz
+
+# tsup 在 TS 配置下生成的临时产物
+tsup.config.bundled_*.mjs
+
+# 凭据（绝不入库）
+.npmrc
+.npm_token
