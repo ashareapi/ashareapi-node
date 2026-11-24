@@ -66,6 +66,28 @@ describe("认证（与 Python SDK 一致）", () => {
     const cli = new AShareAPI({ apiKey: "bad" });
     await expect(cli.request("/v1/quote", { code: "sh600667" })).rejects.toBeInstanceOf(AuthError);
   });
+
+  it("403 / 413 / 422 → 抛错，⛔ 不把服务端错误体当返回值（2026-10-19 修）", async () => {
+    // 旧版只处理 401/429/5xx，其余 4xx 落到 `return body` ⇒ 用户拿到没有 data 的字典，
+    // 转表格时报 "If using all scalar values, you must pass an index"。
+    // 错误体按服务端实际返回的形状构造
+    const cases: ReadonlyArray<readonly [number, Record<string, unknown>]> = [
+      [403, { error: "分钟线需要 standard（当前 trial）—— 日 / 周 / 月线仍免费", min_tier: "standard" }],
+      [413, { error: "单次预估 242,400 条，超过上限 60,000 条", limit_items: 60000 }],
+      [422, { error: "匿名单次最多 5 只标的（本次 100 只）" }],
+    ];
+    for (const [status, body] of cases) {
+      fetchMock.mockClear();
+      respond(body, status);
+      const cli = new AShareAPI({ apiKey: "ct-x", retries: 1 });
+      const err = (await cli
+        .request("/v1/kline", { code: "sh600000" })
+        .catch((e: unknown) => e)) as Error;
+      expect(err, `HTTP ${status}`).toBeInstanceOf(status === 403 ? AuthError : APIError);
+      expect(err.message, `HTTP ${status}`).toContain(body.error as string); // ⛔ 不吞服务端原话
+      expect(fetchMock, `HTTP ${status}`).toHaveBeenCalledTimes(1); // 4xx 重试无意义
+    }
+  });
 });
 
 describe("信封解析（structured / data / 非表格）", () => {
@@ -138,6 +160,36 @@ describe("重试与退避", () => {
     await vi.advanceTimersByTimeAsync(60_000);
     await assertion;
     expect(fetchMock).toHaveBeenCalledTimes(3);
+  });
+
+  it("429 + Retry-After: 60 → **不重试**，只发 1 次请求（旧版会放大成 3 次）", async () => {
+    fetchMock.mockImplementation(
+      async () =>
+        new Response(JSON.stringify({ detail: "slow down" }), {
+          status: 429,
+          headers: { "content-type": "application/json", "retry-after": "60" },
+        }),
+    );
+    const cli = new AShareAPI({ apiKey: "", retries: 3 });
+    await expect(cli.request("/v1/quote", { code: "sh600667" })).rejects.toBeInstanceOf(RateLimitError);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("429 + Retry-After: 2（≤ 上限）→ 睡等后仍重试", async () => {
+    vi.useFakeTimers();
+    fetchMock.mockImplementation(
+      async () =>
+        new Response(JSON.stringify({ detail: "slow down" }), {
+          status: 429,
+          headers: { "content-type": "application/json", "retry-after": "2" },
+        }),
+    );
+    const cli = new AShareAPI({ apiKey: "", retries: 2 });
+    const p = cli.request("/v1/quote", { code: "sh600667" });
+    const assertion = expect(p).rejects.toBeInstanceOf(RateLimitError);
+    await vi.advanceTimersByTimeAsync(60_000);
+    await assertion;
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 
   it("5xx → 重试后抛 APIError", async () => {

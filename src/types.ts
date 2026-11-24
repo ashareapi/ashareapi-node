@@ -81,7 +81,7 @@ export interface Section {
 /**
  * **多段结构**（`shareholder` / `calendar` 的 `data`）
  *
- * ⚠️ 这两个端点的 `data` 是**多段对象**，不是 `Row[]`。
+ * 这两个端点的 `data` 是**多段对象**，不是 `Row[]`。
  */
 export interface SectionedResult {
   /** 段列表（**保序**） */
@@ -93,7 +93,7 @@ export interface SectionedResult {
 /**
  * **表列表**（`finance` 的 `data`）
  *
- * ⚠️ `data` 是 `Row[][]`，不是 `Row[]`
+ * `data` 是 `Row[][]`，不是 `Row[]`
  * （`[0]`=利润表 · `[1]`=资产负债表 · `[2]`=现金流量表，每张表**期次降序**）。
  */
 export type TableList = Row[][];

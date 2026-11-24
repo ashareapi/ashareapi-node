@@ -7,9 +7,9 @@ import { AShareAPI } from "ashareapi";
 
 const cli = new AShareAPI(); // 免费端点无需 Key
 
-// 1) 实时行情快照
+// 1) 最近 30 个交易日的行情
 const bars = await cli.quote("sh600667");
-console.log("行情（最新一根）:", bars[0]);
+console.log("行情（最新一天）:", bars[0]);
 
 // 2) K 线（代码格式随便写，自动归一化）
 const k = await cli.kline("600667.SH", "day", 3);

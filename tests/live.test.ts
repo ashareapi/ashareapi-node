@@ -64,7 +64,7 @@ describe.runIf(KEY)("付费端点（需 ASHARE_API_KEY）", () => {
   const paid = new AShareAPI({ apiKey: KEY });
 
   it("screen 预设生效（limit 被尊重）", async () => {
-    const rows = await paid.screen("", "low_pe", 5);
+    const rows = await paid.screen({ preset: "low_pe", limit: 5 });
     expect(rows.length).toBeLessThanOrEqual(5);
   });
 

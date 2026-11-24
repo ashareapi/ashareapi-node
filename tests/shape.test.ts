@@ -9,26 +9,110 @@ import { VERSION } from "../src/version.js";
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), "..");
 const pkg = JSON.parse(readFileSync(join(ROOT, "package.json"), "utf8")) as Record<string, unknown>;
 
-/** 33 个端点方法（对齐线上 /openapi.json） */
+/** 102 个端点方法（对齐线上 /openapi.json；`/v1/wiki` 文档检索不进 SDK） */
 const METHODS = [
-  // 基础 / 工具
-  "health", "usage", "challenge",
-  // 行情
-  "quote", "kline", "hot", "marketOverview", "changedist",
-  // 财务 / 公司
-  "finance", "profile", "dividend", "shareholder", "chip", "events",
-  // 个股深度（盘口 / 全字段画像）
-  "orderbook", "snapshot",
-  // 资金 / 交易
-  "fund", "lhb", "marginTrade", "blockTrade",
-  // 指标 / 选股
-  "technical", "screen",
-  // 板块 / 产业链
-  "sector", "sectorValuation", "industryChain",
-  // 宏观 / 固收 / ETF / 新股
-  "macro", "bond", "etf", "ipo",
-  // 日历 / 研报 / 搜索
-  "calendar", "dehydrated", "search",
+  "abnormal",
+  "agent_ask",
+  "agent_research",
+  "agentResearchStatus",
+  "agent_search",
+  "analyst",
+  "auction",
+  "backtest",
+  "backtest_batch",
+  "bigorder",
+  "bigorder_flow",
+  "bigorder_flow_full",
+  "bigorder_history",
+  "bigorder_queue",
+  "bigorder_rank",
+  "bigorder_split",
+  "block_trade",
+  "bond",
+  "broken_board",
+  "buyback",
+  "calendar",
+  "challenge",
+  "changedist",
+  "chatCompletions",
+  "chip",
+  "chip_batch",
+  "consensus",
+  "dehydrated",
+  "disclosure",
+  "dividend",
+  "etf",
+  "events",
+  "evidence",
+  "factors",
+  "finance",
+  "finance_batch",
+  "flash",
+  "forex",
+  "fund",
+  "fund_batch",
+  "fund_flow",
+  "fund_short",
+  "fund_south",
+  "futures",
+  "health",
+  "hot",
+  "index_constituent",
+  "index_list",
+  "industry_chain",
+  "ip_whitelist",
+  "ipo",
+  "kline",
+  "kline_batch",
+  "kline_full",
+  "lhb",
+  "lhb_agency",
+  "lhb_seats",
+  "limit_reason",
+  "limit_up",
+  "macro",
+  "margin_trade",
+  "market_kline",
+  "market_mood",
+  "market_overview",
+  "messages",
+  "minute",
+  "models",
+  "new_high",
+  "news",
+  "northbound",
+  "notice",
+  "orderbook",
+  "playbooks",
+  "profile",
+  "profile_batch",
+  "quote",
+  "quote_batch",
+  "rating",
+  "report",
+  "responses",
+  "review",
+  "scanner",
+  "scannerSnapshots",
+  "score",
+  "screen",
+  "search",
+  "sector",
+  "sector_valuation",
+  "shareholder",
+  "shareholder_batch",
+  "snapshot",
+  "snapshot_batch",
+  "stocks",
+  "strategies",
+  "suspension",
+  "tail_chase",
+  "technical",
+  "technical_batch",
+  "trade_calendar",
+  "usage",
+  "watchlist",
+  "watchlistQuotes",
 ];
 
 const SNAKE_ALIASES: Array<[string, string]> = [
@@ -37,23 +121,30 @@ const SNAKE_ALIASES: Array<[string, string]> = [
   ["block_trade", "blockTrade"],
   ["sector_valuation", "sectorValuation"],
   ["industry_chain", "industryChain"],
+  ["kline_full", "klineFull"],
+  ["ip_whitelist", "ipWhitelist"],
+  ["backtest_batch", "backtestBatch"],
+  ["limit_up", "limitUp"],
+  ["market_kline", "marketKline"],
+  ["fund_batch", "fundBatch"],
 ];
 
 describe("端点覆盖（形状）", () => {
-  it("32 个方法都在原型上", () => {
+  it("102 个方法都在原型上", () => {
     const missing = METHODS.filter((m) => typeof (AShareAPI.prototype as never)[m] !== "function");
     expect(missing, `缺方法：${missing.join(", ")}`).toEqual([]);
   });
 
-  it("方法数正好 32（防漏也防多）", () => {
-    expect(METHODS).toHaveLength(32);
+  it("方法数正好 48（防漏也防多）", () => {
+    expect(METHODS).toHaveLength(102);
   });
 
-  it("免 Key 端点 = 7 个（5 数据 + 2 工具）", () => {
+  it("免 Key 端点 = 10 个（8 数据 + 2 工具）", () => {
     expect([...FREE_ENDPOINTS].sort()).toEqual(
       [
         "/v1/challenge", "/v1/changedist", "/v1/health", "/v1/hot",
-        "/v1/kline", "/v1/market-overview", "/v1/quote",
+        "/v1/kline", "/v1/market-overview", "/v1/models", "/v1/quote",
+        "/v1/trade-calendar", "/v1/wiki",
       ].sort(),
     );
   });
@@ -74,7 +165,7 @@ describe("snake_case 别名", () => {
   });
   afterEach(() => vi.unstubAllGlobals());
 
-  it("5 个别名都是函数", () => {
+  it("11 个别名都是函数", () => {
     for (const [snake] of SNAKE_ALIASES) {
       expect(typeof (AShareAPI.prototype as never)[snake], `${snake} 缺失`).toBe("function");
     }

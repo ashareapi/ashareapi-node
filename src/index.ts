@@ -9,15 +9,16 @@
  * console.log(bars[0]);                        // { date, open, last, high, low, volume, amount, turnover }
  *
  * const cli2 = new AShareAPI({ apiKey: "ct-..." }); // 付费端点需 Key（也读 ASHARE_API_KEY）
- * const rows = await cli2.screen("", "low_pe", 10, "ROETTM");   // expr, preset, limit, orderby
+ * const rows = await cli2.screen({ preset: "low_pe", sort: "roe_ttm", limit: 10 });
  * ```
  *
- * ⚠️ **仅在服务端使用** —— 浏览器里会暴露你的 API Key（本包刻意不提供浏览器构建）。
+ * **仅在服务端使用** —— 浏览器里会暴露你的 API Key（本包刻意不提供浏览器构建）。
  *
  * 文档：https://ashareapi.com/docs  ·  端点清单：https://ashareapi.com/endpoints
  */
 
 export { AShareAPI } from "./endpoints.js";
+export type { ScreenOptions } from "./endpoints.js";
 export { AShareAPIBase, DEFAULT_BASE, FREE_ENDPOINTS } from "./client.js";
 export { normalizeCode } from "./code.js";
 export {
